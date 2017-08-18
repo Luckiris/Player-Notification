@@ -24,6 +24,6 @@ Changelog
 
 Credits
 -------------
-Sky : German translation
-AlliedModders : Code for invisibility in spectators
-Luckiris : Coding the plugin
+> - Sky : German translation
+> - AlliedModders : Code for invisibility in spectators
+> - Luckiris : Coding the plugin
