@@ -1,0 +1,16 @@
+"Phrases"
+{
+	"Connected"
+	{
+		"en"			"joined the server"
+		"fr"			"a rejoint le serveur"
+		"de"			"ist dem Server beigetreten"
+	}
+	
+	"Disconnected"
+	{
+		"en"			"left the server"
+		"fr"			"a quitté le serveur"
+		"de"			"hat den Server verlassen"
+	}
+}
