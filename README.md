@@ -5,6 +5,10 @@ Description
 -------------
 Sourcemod plugin which control what the player can see in-game (messages, players in scoreboard, ...)
 
+Requirements
+-------------
+https://forums.alliedmods.net/showthread.php?p=2464171
+
 Cvars
 -------------
 > - sm_dnotification_admin_see_message "1" (Default: "1" - Admins can see other admins connecting)
