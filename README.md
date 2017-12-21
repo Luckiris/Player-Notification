@@ -1,4 +1,4 @@
-[ANY] Dream - Player view and notification [V 1.0]
+[ANY] Dream - Player view and notification [V 1.1]
 ===================
 
 Description
@@ -25,6 +25,7 @@ Cvars
 Changelog
 -------------
 > - V 1.0 (18 august 2017): Release of the plugin.
+> - V 1.1 (21 december 2017): Added new functionalities like !adminspec, !info, !stealth + new messages for connect/disconnect messages (in translations file now) + added multi colors + optimize a bit the code
 
 Credits
 -------------
