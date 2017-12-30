@@ -31,7 +31,7 @@ public Plugin myinfo =
 	name = "Dream - Player view and notification",
 	author = "Luckiris",
 	description = "Manage what the player can see in-game",
-	version = "1.1",
+	version = "1.2",
 	url = "http://dream-community.de"
 };
 
@@ -46,7 +46,7 @@ public void OnPluginStart()
 	cvHideAdminDisconnect = CreateConVar("sm_dnotification_hide_admin_disconnect", "1", "Hide the admin disconnecting");
 	cvHideAdminTeam = CreateConVar("sm_dnotification_hide_admin_team", "1", "Hide the admin joining a team");
 	cvAdminSeeOtherAdmin = CreateConVar("sm_dnotification_admin_see_message", "1", "Admins can see other admins connecting/disconnecting");
-	cvSupporterSeeOtherAdmin = CreateConVar("sm_dnotification_admin_see_message", "1", "Supporters can see admins connecting/disconnecting");
+	cvSupporterSeeOtherAdmin = CreateConVar("sm_dnotification_supporter_see_message", "1", "Supporters can see admins connecting/disconnecting");
 	cvHideAdminSpectator = CreateConVar("sm_dnotification_hide_admin_spectator", "1", "Hide the admins in spectator");
 	cvHideAdminConsole = CreateConVar("sm_dnotification_hide_admin_console", "1", "Block the commands that could show admins in console");
 
