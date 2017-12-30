@@ -4,9 +4,9 @@
 #include <sdktools>
 #include <geoip>
 #include <sdkhooks>
-#include <PTaH>
-#include <multicolors>
 #include <cstrike>
+#include <PTaH>
+#include <luckiris_include>
 
 #pragma newdecls required
 
@@ -32,7 +32,7 @@ public Plugin myinfo =
 	name = "Dream - Player view and notification",
 	author = "Luckiris",
 	description = "Manage what the player can see in-game",
-	version = "1.0",
+	version = "1.1",
 	url = "http://dream-community.de"
 };
 
@@ -50,9 +50,6 @@ public void OnPluginStart()
 	cvSupporterSeeOtherAdmin = CreateConVar("sm_dnotification_admin_see_message", "1", "Supporters can see admins connecting/disconnecting");
 	cvHideAdminSpectator = CreateConVar("sm_dnotification_hide_admin_spectator", "1", "Hide the admins in spectator");
 	cvHideAdminConsole = CreateConVar("sm_dnotification_hide_admin_console", "1", "Block the commands that could show admins in console");
-	
-	gAdminList = new ArrayList();
-	gSupporterList = new ArrayList();
 
 	HookEvent("player_connect", EventConnect, EventHookMode_Pre);
 	HookEvent("player_disconnect", EventDisconnect, EventHookMode_Pre);
@@ -62,7 +59,7 @@ public void OnPluginStart()
 
 	AutoExecConfig(true, "dnotification");
 	
-	RegAdminCmd("sm_adminspec", CommandSpecList, ADMFLAG_SLAY, "Command to list the admins in spectator in invisible mode");
+	//RegAdminCmd("sm_adminspec", CommandSpecList, ADMFLAG_SLAY, "Command to list the admins in spectator in invisible mode");
 	RegAdminCmd("sm_stealth", CommandStealth, ADMFLAG_BAN, "Command to put yourself in invisible mode");
 	RegAdminCmd("sm_info", CommandInfo, ADMFLAG_SLAY, "Command to see some informations about clients");
 }
@@ -74,16 +71,20 @@ public void OnMapStart()
 	gSupporterList = new ArrayList();	
 	
 	gPlayerManager = FindEntityByClassname(-1, "cs_player_manager");
+	
 	if(gPlayerManager != -1)
-	{
 		SDKHook(gPlayerManager, SDKHook_ThinkPost, HookSpec);
-	}
 }
 
 public void OnMapEnd()
 {
+	gAdminList.Clear();
+	gSupporterList.Clear();
 	delete gAdminList;
 	delete gSupporterList;
+	
+	if(gPlayerManager != -1)
+		SDKUnhook(gPlayerManager, SDKHook_ThinkPost, HookSpec);
 }
 
 /* Admins commands */
@@ -93,19 +94,20 @@ public Action CommandSpecList(int client, int args)
 	int count = 0;
 	for (int i = 1; i < MAXPLAYERS; i++)
 	{
-		if (IsValidClient(i))
+		if (IsClientValid(client))
 		{
-			if (IsAdmin(i) && GetClientTeam(i) == CS_TEAM_SPECTATOR)
+			if (IsClientAdmin(i) && GetClientTeam(i) == CS_TEAM_SPECTATOR)
 			{
 				Format(list, sizeof(list), "%s %N - ", list, i);
 				count++;
 			}
 		}
 	}
+	
 	if (count > 0)
-		CPrintToChat(client, "[SM] List of admins in Spectators : %s.", list);
+		WriteToChat(client, "[{green}ADMINS{default}] {limegreen}List of admins in Spectators : {pink}%s.", list);
 	else
-		CPrintToChat(client, "[SM] No admins in Spectators.");			
+		WriteToChat(client, "[{green}ADMINS{default}] {limegreen}No admins in Spectators.");			
 
 	return Plugin_Handled;
 }
@@ -115,7 +117,7 @@ public Action CommandStealth(int client, int args)
 	if (gIsInvisible[client])
 	{
 		gIsInvisible[client] = false;
-		CPrintToChat(client, "[SM] You are now visible.");
+		WriteToChat(client, "[{green}INVISIBLE{default}] {limegreen}You are now visible.");
 		LogAction(client, -1, "\"%L\" toggled off his invisibility mode in Spectators", client);				
 	}
 	else
@@ -123,7 +125,7 @@ public Action CommandStealth(int client, int args)
 		gIsInvisible[client] = true;
 		if (GetClientTeam(client) != CS_TEAM_SPECTATOR)
 			ChangeClientTeam(client, CS_TEAM_SPECTATOR);
-		CPrintToChat(client, "[SM] You are now invisible.");
+		WriteToChat(client, "[{green}INVISIBLE{default}] {limegreen}You are now invisible.");
 		LogAction(client, -1, "\"%L\" toggled on his invisibility mode in Spectators", client);		
 	}
 
@@ -178,9 +180,9 @@ public Action CommandInfo(int client, int args)
 		GetClientIP(target, ip, sizeof(ip));
 		GeoipCountry(ip, country, sizeof(country));
 		GetClientAuthId(target, AuthId_Engine, steamID, sizeof(steamID), true);
-		isAdmin = IsAdmin(target);
-		isSupporter = IsAdmin(target, ADMFLAG_SLAY);
-		isVip = IsAdmin(target, ADMFLAG_CUSTOM5);
+		isAdmin = IsClientAdmin(target);
+		isSupporter = IsClientAdmin(target, ADMFLAG_SLAY);
+		isVip = IsClientAdmin(target, ADMFLAG_CUSTOM5);
 		
 		panel = new Panel();
 		
@@ -275,61 +277,55 @@ public Action EventDisconnect(Handle event, char[] name, bool dontBroadcast)
 		if (adminNumber != -1)
 		{
 			isTargetAdmin = true;
-			gAdminList.Erase(adminNumber);
 		}
 		if (supporterNumber != -1)
 		{
 			isTargetSupporter = true;
-			gSupporterList.Erase(supporterNumber);
 		}
 		
 		/* Sending the message to the players */ 
 		for (int i = 1; i < MAXPLAYERS; i++)
 		{	
-			if (!IsValidClient(i))
+			if (!IsClientValid(i))
 				continue;
 			
-			isPlayerAdmin = IsAdmin(i);
-			isPlayerSupporter = IsAdmin(i, ADMFLAG_SLAY);
+			isPlayerAdmin = IsClientAdmin(i);
+			isPlayerSupporter = IsClientAdmin(i, ADMFLAG_SLAY);
 			
 			if (cvHideAdminDisconnect.BoolValue)
 			{	
 				if (isTargetAdmin)
 				{
 					if (isPlayerAdmin && cvAdminSeeOtherAdmin.BoolValue)
-						CPrintToChat(i, "%t", "Admin player disconnect", playerName, reason);
+						WriteToChat(i, "%t", "Admin player disconnect", playerName, reason);
 					else if (isPlayerSupporter && cvSupporterSeeOtherAdmin.BoolValue)
-						CPrintToChat(i, "%t", "Admin player disconnect", playerName, reason);					
+						WriteToChat(i, "%t", "Admin player disconnect", playerName, reason);				
 				}	
 				else if (isTargetSupporter)
 				{
 					if (isPlayerAdmin && cvAdminSeeOtherAdmin.BoolValue)
-						CPrintToChat(i, "%t", "Supporter player disconnect", playerName, reason);
+						WriteToChat(i, "%t", "Supporter player disconnect", playerName, reason);
 					else if (isPlayerSupporter && cvSupporterSeeOtherAdmin.BoolValue)
-						CPrintToChat(i, "%t", "Supporter player disconnect", playerName, reason);	
+						WriteToChat(i, "%t", "Supporter player disconnect", playerName, reason);				
 					else
-						CPrintToChat(i, "%t", "Normal player disconnect", playerName, reason);						
+						WriteToChat(i, "%t", "Normal player disconnect", playerName, reason);				
 				}
 				else
-				{
-					CPrintToChat(i, "%t", "Normal player disconnect", playerName, reason);	
-				}	
+					WriteToChat(i, "%t", "Normal player disconnect", playerName, reason);	
 			}
 			else
 			{
 				if (isTargetAdmin)
-					CPrintToChat(i, "%t", "Admin player disconnect", playerName, reason);
+					WriteToChat(i, "%t", "Admin player disconnect", playerName, reason);
 				else if (isTargetSupporter)
-					CPrintToChat(i, "%t", "Supporter player disconnect", playerName, reason);	
+					WriteToChat(i, "%t", "Supporter player disconnect", playerName, reason);				
 				else
-					CPrintToChat(i, "%t", "Normal player disconnect", playerName, reason);		
+					WriteToChat(i, "%t", "Normal player disconnect", playerName, reason);	
 			}
 		}
 	}
 	else
-	{
 		SetEventBroadcast(event, false);
-	}
 	
 	return Plugin_Continue;
 }
@@ -353,9 +349,8 @@ public void OnClientPostAdminCheck(int client)
 		GetClientName(client, name, sizeof(name));
 		GetClientIP(client, ip, sizeof(ip));
 		GeoipCountry(ip, country, sizeof(country));
-		//GetClientAuthId(client, AuthId_Engine, steamID, sizeof(steamID), true);
-		isTargetAdmin = IsAdmin(client);
-		isTargetSupporter = IsAdmin(client, ADMFLAG_SLAY);
+		isTargetAdmin = IsClientAdmin(client);
+		isTargetSupporter = IsClientAdmin(client, ADMFLAG_SLAY);
 		
 		/* Adding the admin/supporters to the global list */
 		if (isTargetAdmin)
@@ -366,43 +361,41 @@ public void OnClientPostAdminCheck(int client)
 		/* Sending the message to the players */ 
 		for (int i = 1; i < MAXPLAYERS; i++)
 		{	
-			if (!IsValidClient(i))
+			if (!IsClientValid(i))
 				continue;
 			
-			isPlayerAdmin = IsAdmin(i);
-			isPlayerSupporter = IsAdmin(i, ADMFLAG_SLAY);
+			isPlayerAdmin = IsClientAdmin(i);
+			isPlayerSupporter = IsClientAdmin(i, ADMFLAG_SLAY);
 			
 			if (cvHideAdminConnect.BoolValue)
 			{	
 				if (isTargetAdmin)
 				{
 					if (isPlayerAdmin && cvAdminSeeOtherAdmin.BoolValue)
-						CPrintToChat(i, "%t", "Admin player connect", name);
-					else if (isPlayerSupporter && cvSupporterSeeOtherAdmin.BoolValue)
-						CPrintToChat(i, "%t", "Admin player connect", name);					
+						WriteToChat(i, "%t", "Admin player connect", name);
+					else if (isPlayerSupporter && cvSupporterSeeOtherAdmin.BoolValue)	
+						WriteToChat(i, "%t", "Admin player connect", name);				
 				}	
 				else if (isTargetSupporter)
 				{
 					if (isPlayerAdmin && cvAdminSeeOtherAdmin.BoolValue)
-						CPrintToChat(i, "%t", "Supporter player connect", name);
+						WriteToChat(i, "%t", "Supporter player connect", name);
 					else if (isPlayerSupporter && cvSupporterSeeOtherAdmin.BoolValue)
-						CPrintToChat(i, "%t", "Supporter player connect", name);	
-					else
-						CPrintToChat(i, "%t", "Normal player connect", name, country);						
+						WriteToChat(i, "%t", "Supporter player connect", name);						
+					else 
+						WriteToChat(i, "%t", "Normal player connect", name, country);										
 				}
 				else
-				{
-					CPrintToChat(i, "%t", "Normal player connect", name, country);	
-				}	
+					WriteToChat(i, "%t", "Normal player connect", name, country);	
 			}
 			else
 			{
 				if (isTargetAdmin)
-					CPrintToChat(i, "%t", "Admin player connect", name);
+					WriteToChat(i, "%t", "Admin player connect", name);
 				else if (isTargetSupporter)
-					CPrintToChat(i, "%t", "Supporter player connect", name);	
+					WriteToChat(i, "%t", "Supporter player connect", name);				
 				else
-					CPrintToChat(i, "%t", "Normal player connect", name, country);		
+					WriteToChat(i, "%t", "Normal player connect", name, country);					
 			}
 		}
 		gIsInvisible[client] = false;
@@ -420,7 +413,7 @@ public Action EventTeam(Handle event, char[] name, bool dontBroadcast)
 	if (cvHideAdminTeam.BoolValue)
 	{
 		int client = GetClientOfUserId(GetEventInt(event, "userid"));
-		if (IsValidClient(client) && IsAdmin(client))
+		if (IsClientValid(client) && IsClientAdmin(client))
 		{
 			/* Hiding the normal event */
 			SetEventBroadcast(event, true);
@@ -444,10 +437,8 @@ public void HookSpec(int entity)
 	
 	for (int i = 1; i < MAXPLAYERS; i++)
 	{
-		if (IsValidClient(i))
-		{
+		if (IsClientValid(i))
 			SetEntData(gPlayerManager, data + (i * 4), !gIsInvisible[i], _, true);
-		}
 	}
 }
 
@@ -470,47 +461,18 @@ public Action Message(int client, char message[1024])
 	
 	if (cvHideAdminConsole.BoolValue)
 	{
-		if (IsValidClient(client))
+		if (IsClientValid(client))
 		{
-			bool admin = IsAdmin(client, ADMFLAG_BAN);
+			bool admin = IsClientAdmin(client, ADMFLAG_BAN);
 			if (StrContains(message, "ping") != -1 
 			|| StrContains(message, "status") != -1
 			|| StrContains(message, "plugins") != -1
 			|| StrContains(message, "exts") != -1
 			|| StrContains(message, "meta") != -1)
-			{
 				result = Plugin_Handled;
-			}
 			if (admin)
-			{
 				result = Plugin_Continue;
-			}
 		}
 	}
 	return result;
-}
-
-/* 
-	Utils 
-*/
-stock bool IsAdmin(int client, int flag = ADMFLAG_BAN)
-{
-	/*	Check if the clients has the flags
-	
-	*/
-	return CheckCommandAccess(client, "sm_admin", flag, true);
-}
-
-stock bool IsValidClient(int client)
-{
-	/*	Check if the client is in game, connected and not a bot
-	
-	*/
-	if (client < 1 && client >= MAXPLAYERS)
-		return false;
-	if (!IsClientConnected(client) || !IsClientInGame(client))
-		return false;
-	if (IsFakeClient(client))
-		return false;
-	return true;
 }

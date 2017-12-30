@@ -1,50 +1,50 @@
-"Phrases"
+﻿"Phrases"
 {
 	"Normal player connect"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{lightgreen}*PLAYER* {darkred}{1} {default}[{purple}{2}{default}] {yellow}joined the server."
-		"fr"			"{lightgreen}*JOUEUR* {darkred}{1} {default}[{purple}{2}{default}] {yellow}a rejoint le serveur."
-		"de"			"{lightgreen}*SPIELER* {darkred}{1} {default}[{purple}{2}{default}] {yellow}ist dem Server beigetreten."
+		"en"			" {lightgreen}*PLAYER* {darkred}{1} {default}[{purple}{2}{default}] {yellow}joined the server."
+		"fr"			" {lightgreen}*JOUEUR* {darkred}{1} {default}[{purple}{2}{default}] {yellow}a rejoint le serveur."
+		"de"			" {lightgreen}*SPIELER* {darkred}{1} {default}[{purple}{2}{default}] {yellow}ist dem Server beigetreten."
 	}
 
 	"Normal player disconnect"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{lightgreen}*PLAYER* {darkred}{1} {yellow}left the server. [{purple}{2}{default}]"
-		"fr"			"{lightgreen}*JOUEUR* {darkred}{1} {yellow}a quitté le serveur. [{purple}{2}{default}]"
-		"de"			"{lightgreen}*SPIELER* {darkred}{1} {yellow}hat den Server verlassen. [{purple}{2}{default}]"
+		"en"			" {lightgreen}*PLAYER* {darkred}{1} {yellow}left the server. [{purple}{2}{default}]"
+		"fr"			" {lightgreen}*JOUEUR* {darkred}{1} {yellow}a quitté le serveur. [{purple}{2}{default}]"
+		"de"			" {lightgreen}*SPIELER* {darkred}{1} {yellow}hat den Server verlassen. [{purple}{2}{default}]"
 	}
 
 	"Admin player connect"
 	{
 		"#format"		"{1:s}"
-		"en"			"{darkred}*ADMIN* {lightgreen}{1} {yellow}joined the server."
-		"fr"			"{darkred}*ADMIN* {lightgreen}{1} {yellow}a rejoint le serveur."
-		"de"			"{darkred}*ADMIN* {lightgreen}{1} {yellow}ist dem Server beigetreten."
+		"en"			" {darkred}*ADMIN* {lightgreen}{1} {yellow}joined the server."
+		"fr"			" {darkred}*ADMIN* {lightgreen}{1} {yellow}a rejoint le serveur."
+		"de"			" {darkred}*ADMIN* {lightgreen}{1} {yellow}ist dem Server beigetreten."
 	}
 
 	"Admin player disconnect"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{darkred}*ADMIN* {lightgreen}{1} {yellow}left the server. [{purple}{2}{default}]"
-		"fr"			"{darkred}*ADMIN* {lightgreen}{1} {yellow}a quitté le serveur. [{purple}{2}{default}]"
-		"de"			"{darkred}*ADMIN* {lightgreen}{1} {yellow}hat den Server verlassen. [{purple}{2}{default}]"
+		"en"			" {darkred}*ADMIN* {lightgreen}{1} {yellow}left the server. [{purple}{2}{default}]"
+		"fr"			" {darkred}*ADMIN* {lightgreen}{1} {yellow}a quitté le serveur. [{purple}{2}{default}]"
+		"de"			" {darkred}*ADMIN* {lightgreen}{1} {yellow}hat den Server verlassen. [{purple}{2}{default}]"
 	}
 
 	"Supporter player connect"
 	{
 		"#format"		"{1:s}"
-		"en"			"{green}*SUPPORTER* {darkred}{1} {yellow}joined the server."
-		"fr"			"{green}*SUPPORTER* {darkred}{1} {yellow}a rejoint le serveur."
-		"de"			"{green}*SUPPORTER* {darkred}{1} {yellow}ist dem Server beigetreten."
+		"en"			" {green}*SUPPORTER* {darkred}{1} {yellow}joined the server."
+		"fr"			" {green}*SUPPORTER* {darkred}{1} {yellow}a rejoint le serveur."
+		"de"			" {green}*SUPPORTER* {darkred}{1} {yellow}ist dem Server beigetreten."
 	}
 
 	"Supporter player disconnect"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{green}*SUPPORTER* {darkred}{1} {yellow}left the server. [{purple}{2}{default}]"
-		"fr"			"{green}*SUPPORTER* {darkred}{1} {yellow}a quitté le serveur. [{purple}{2}{default}]"
-		"de"			"{green}*SUPPORTER* {darkred}{1} {yellow}hat den Server verlassen. [{purple}{2}{default}]"
+		"en"			" {green}*SUPPORTER* {darkred}{1} {yellow}left the server. [{purple}{2}{default}]"
+		"fr"			" {green}*SUPPORTER* {darkred}{1} {yellow}a quitté le serveur. [{purple}{2}{default}]"
+		"de"			" {green}*SUPPORTER* {darkred}{1} {yellow}hat den Server verlassen. [{purple}{2}{default}]"
 	}				
 }
