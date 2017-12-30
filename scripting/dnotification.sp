@@ -22,8 +22,7 @@ ConVar cvHideAdminSpectator;
 ConVar cvHideAdminConsole;
 
 /* Global Vars */
-ArrayList gAdminList; // <- Contains the list of admins connected on the server 
-ArrayList gSupporterList; // <- Contains the list of supporters connected on the server 
+StringMap gStaffList; // <- Contains the list of admins connected on the server
 bool gIsInvisible[MAXPLAYERS + 1]; // <- Contains the status of the clients
 int gPlayerManager; // <- Player entity manager
 
@@ -59,7 +58,7 @@ public void OnPluginStart()
 
 	AutoExecConfig(true, "dnotification");
 	
-	//RegAdminCmd("sm_adminspec", CommandSpecList, ADMFLAG_SLAY, "Command to list the admins in spectator in invisible mode");
+	RegAdminCmd("sm_admins", CommandAdmins, ADMFLAG_SLAY, "Command to list the admins in the server");
 	RegAdminCmd("sm_stealth", CommandStealth, ADMFLAG_BAN, "Command to put yourself in invisible mode");
 	RegAdminCmd("sm_info", CommandInfo, ADMFLAG_SLAY, "Command to see some informations about clients");
 }
@@ -67,8 +66,7 @@ public void OnPluginStart()
 /* Map start and end */
 public void OnMapStart()
 {
-	gAdminList = new ArrayList();
-	gSupporterList = new ArrayList();	
+	gStaffList = new StringMap();
 	
 	gPlayerManager = FindEntityByClassname(-1, "cs_player_manager");
 	
@@ -78,36 +76,31 @@ public void OnMapStart()
 
 public void OnMapEnd()
 {
-	gAdminList.Clear();
-	gSupporterList.Clear();
-	delete gAdminList;
-	delete gSupporterList;
+	gStaffList.Clear();
+	delete gStaffList;
 	
 	if(gPlayerManager != -1)
 		SDKUnhook(gPlayerManager, SDKHook_ThinkPost, HookSpec);
 }
 
 /* Admins commands */
-public Action CommandSpecList(int client, int args)
+public Action CommandAdmins(int client, int args)
 {
 	char list[250] = "";
 	int count = 0;
 	for (int i = 1; i < MAXPLAYERS; i++)
 	{
-		if (IsClientValid(client))
+		if (IsClientAdmin(i))
 		{
-			if (IsClientAdmin(i) && GetClientTeam(i) == CS_TEAM_SPECTATOR)
-			{
-				Format(list, sizeof(list), "%s %N - ", list, i);
-				count++;
-			}
+			Format(list, sizeof(list), "%s %N - ", list, i);
+			count++;
 		}
 	}
 	
 	if (count > 0)
-		WriteToChat(client, "[{green}ADMINS{default}] {limegreen}List of admins in Spectators : {pink}%s.", list);
+		WriteToChat(client, " [{green}ADMINS{default}] {limegreen}List of admins : {yellow}%s.", list);
 	else
-		WriteToChat(client, "[{green}ADMINS{default}] {limegreen}No admins in Spectators.");			
+		WriteToChat(client, " [{green}ADMINS{default}] {limegreen}No admins on the server.");			
 
 	return Plugin_Handled;
 }
@@ -117,7 +110,7 @@ public Action CommandStealth(int client, int args)
 	if (gIsInvisible[client])
 	{
 		gIsInvisible[client] = false;
-		WriteToChat(client, "[{green}INVISIBLE{default}] {limegreen}You are now visible.");
+		WriteToChat(client, " [{green}INVISIBLE{default}] {limegreen}You are now visible.");
 		LogAction(client, -1, "\"%L\" toggled off his invisibility mode in Spectators", client);				
 	}
 	else
@@ -125,7 +118,7 @@ public Action CommandStealth(int client, int args)
 		gIsInvisible[client] = true;
 		if (GetClientTeam(client) != CS_TEAM_SPECTATOR)
 			ChangeClientTeam(client, CS_TEAM_SPECTATOR);
-		WriteToChat(client, "[{green}INVISIBLE{default}] {limegreen}You are now invisible.");
+		WriteToChat(client, " [{green}INVISIBLE{default}] {limegreen}You are now invisible.");
 		LogAction(client, -1, "\"%L\" toggled on his invisibility mode in Spectators", client);		
 	}
 
@@ -263,8 +256,8 @@ public Action EventDisconnect(Handle event, char[] name, bool dontBroadcast)
 		/* Variables for the message */
 		char playerName[MAX_NAME_LENGTH];
 		char reason[128];
-		int adminNumber = gAdminList.FindValue(GetEventInt(event, "userid"));
-		int supporterNumber = gSupporterList.FindValue(GetEventInt(event, "userid"));
+		char user[32];
+		int staff;
 		bool isTargetAdmin = false;
 		bool isTargetSupporter = false;
 		bool isPlayerAdmin, isPlayerSupporter;
@@ -272,16 +265,14 @@ public Action EventDisconnect(Handle event, char[] name, bool dontBroadcast)
 		/* Filling the vars */
 		GetEventString(event, "name", playerName, sizeof(playerName));
 		GetEventString(event, "reason", reason, sizeof(reason));
+		IntToString(GetEventInt(event, "userid"), user, sizeof(user));
 		
-		/* Removing the player from the global list */
-		if (adminNumber != -1)
-		{
-			isTargetAdmin = true;
-		}
-		if (supporterNumber != -1)
-		{
-			isTargetSupporter = true;
-		}
+		/* Removing the player from the staff list */
+		if (gStaffList.GetValue(user, staff))
+			gStaffList.Remove(user);
+		
+		isTargetAdmin = (staff == ADMFLAG_BAN);
+		isTargetSupporter = (staff == ADMFLAG_SLAY);
 		
 		/* Sending the message to the players */ 
 		for (int i = 1; i < MAXPLAYERS; i++)
@@ -344,6 +335,7 @@ public void OnClientPostAdminCheck(int client)
 		char ip[20];
 		char country[64];
 		bool isTargetAdmin, isTargetSupporter, isPlayerAdmin, isPlayerSupporter;
+		char userID[32];
 		
 		/* Filling the variables */
 		GetClientName(client, name, sizeof(name));
@@ -351,12 +343,13 @@ public void OnClientPostAdminCheck(int client)
 		GeoipCountry(ip, country, sizeof(country));
 		isTargetAdmin = IsClientAdmin(client);
 		isTargetSupporter = IsClientAdmin(client, ADMFLAG_SLAY);
+		IntToString(GetClientUserId(client), userID, sizeof(userID));
 		
 		/* Adding the admin/supporters to the global list */
 		if (isTargetAdmin)
-			gAdminList.Push(GetClientUserId(client));	
+			gStaffList.SetValue(userID, ADMFLAG_BAN, true);
 		else if (isTargetSupporter)
-			gSupporterList.Push(GetClientUserId(client));
+			gStaffList.SetValue(userID, ADMFLAG_SLAY, true);
 	
 		/* Sending the message to the players */ 
 		for (int i = 1; i < MAXPLAYERS; i++)
