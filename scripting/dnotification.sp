@@ -5,7 +5,6 @@
 #include <geoip>
 #include <sdkhooks>
 #include <cstrike>
-#include <PTaH>
 #include <luckiris_include>
 
 #pragma newdecls required
@@ -19,7 +18,6 @@ ConVar cvHideAdminTeam;
 ConVar cvAdminSeeOtherAdmin;
 ConVar cvSupporterSeeOtherAdmin;
 ConVar cvHideAdminSpectator;
-ConVar cvHideAdminConsole;
 
 /* Global Vars */
 StringMap gStaffList; // <- Contains the list of admins connected on the server
@@ -31,7 +29,7 @@ public Plugin myinfo =
 	name = "Dream - Player view and notification",
 	author = "Luckiris",
 	description = "Manage what the player can see in-game",
-	version = "1.2",
+	version = "1.3",
 	url = "http://dream-community.de"
 };
 
@@ -48,13 +46,10 @@ public void OnPluginStart()
 	cvAdminSeeOtherAdmin = CreateConVar("sm_dnotification_admin_see_message", "1", "Admins can see other admins connecting/disconnecting");
 	cvSupporterSeeOtherAdmin = CreateConVar("sm_dnotification_supporter_see_message", "1", "Supporters can see admins connecting/disconnecting");
 	cvHideAdminSpectator = CreateConVar("sm_dnotification_hide_admin_spectator", "1", "Hide the admins in spectator");
-	cvHideAdminConsole = CreateConVar("sm_dnotification_hide_admin_console", "1", "Block the commands that could show admins in console");
 
 	HookEvent("player_connect", EventConnect, EventHookMode_Pre);
 	HookEvent("player_disconnect", EventDisconnect, EventHookMode_Pre);
 	HookEvent("player_team", EventTeam, EventHookMode_Pre);
-	
-	PTaH(PTaH_ExecuteStringCommand, Hook, Message);
 
 	AutoExecConfig(true, "dnotification");
 	
@@ -439,33 +434,4 @@ public void OnClientDisconnect_Post(int client)
 {
 	/* Turn off the invisibility */
 	gIsInvisible[client] = false;
-}
-
-/* PTaH */
-public Action Message(int client, char message[1024])
-{
-	/*	Block the console commands status and ping in order to hide the admins
-	
-		IF the player is not admin
-		THEN he doesn't have access to those commands
-	
-	*/
-	Action result = Plugin_Continue;
-	
-	if (cvHideAdminConsole.BoolValue)
-	{
-		if (IsClientValid(client))
-		{
-			bool admin = IsClientAdmin(client, ADMFLAG_BAN);
-			if (StrContains(message, "ping") != -1 
-			|| StrContains(message, "status") != -1
-			|| StrContains(message, "plugins") != -1
-			|| StrContains(message, "exts") != -1
-			|| StrContains(message, "meta") != -1)
-				result = Plugin_Handled;
-			if (admin)
-				result = Plugin_Continue;
-		}
-	}
-	return result;
 }
