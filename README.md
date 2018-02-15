@@ -1,4 +1,6 @@
-[ANY] Dream - Player view and notification [V 1.3]
+[CURRENTLY IN REWORK]
+
+[ANY] Player notification [V 1.3]
 ===================
 
 Description
@@ -21,7 +23,7 @@ Changelog
 > - V 1.0 (18 august 2017): Release of the plugin.
 > - V 1.1 (21 december 2017): Added new functionalities like !adminspec, !info, !stealth + new messages for connect/disconnect messages (in translations file now) + added multi colors + optimize a bit the code
 > - V 1.2 (30 december 2017): Fixed the function IsClientAdmin in my include and change the command !adminspec to !admins which prints every admins connected to the server
-> - V 1.3 (02 january 2017): Removed the filter for the commands in console (weird bug filtering random words in chat)
+> - V 1.3 (02 january 2018): Removed the filter for the commands in console (weird bug filtering random words in chat)
 
 Credits
 -------------
